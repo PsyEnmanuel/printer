@@ -1,7 +1,7 @@
 {
-  "name": "saonas",
+  "name": "saonas-printer",
   "version": "1.0.4",
-  "description": "Saonas",
+  "description": "Saonas-printer",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -11,19 +11,19 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/PsyEnmanuel/saonas.git"
+    "url": "git+https://github.com/PsyEnmanuel/printer.git"
   },
   "publish": {
     "provider": "github",
     "releaseType": "release",
     "private": true,
     "owner": "PsyEnmanuel",
-    "repo": "saonas",
+    "repo": "saonas-printer",
     "publish": "always"
   },
   "build": {
-    "appId": "com.saonas.app",
-    "productName": "Saonas App",
+    "appId": "com.saonas-printer.app",
+    "productName": "Saonas-printer",
     "win": {
       "target": "nsis"
     },
@@ -42,7 +42,7 @@
     "electron-updater": "^5.3.0"
   },
   "bugs": {
-    "url": "https://github.com/PsyEnmanuel/saonas/issues"
+    "url": "https://github.com/PsyEnmanuel/printer/issues"
   },
-  "homepage": "https://github.com/PsyEnmanuel/saonas#readme"
+  "homepage": "https://github.com/PsyEnmanuel/printer#readme"
 }
