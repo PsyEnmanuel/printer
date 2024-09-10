@@ -1,0 +1,32 @@
+name: Build and Publish Electron App
+
+on:
+  push:
+    branches:
+      - main  # or your default branch
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest  # Use Windows environment
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Node.js (required for Electron)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'  # Specify the Node.js version
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Build and publish the Electron app
+      - name: Build and publish
+        run: npm run dist  # Or the custom build command you use
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Use the GH_TOKEN secret for authentication
