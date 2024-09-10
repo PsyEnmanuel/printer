@@ -1,6 +1,6 @@
 {
   "name": "saonas",
-  "version": "1.0.5",
+  "version": "1.0.4",
   "description": "Saonas",
   "main": "main.js",
   "scripts": {
@@ -15,7 +15,10 @@
   },
   "publish": {
     "provider": "github",
-    "releaseType": "release"
+    "releaseType": "release",
+    "private": true,
+    "owner": "PsyEnmanuel",
+    "repo": "saonas"
   },
   "build": {
     "appId": "com.saonas.app",
