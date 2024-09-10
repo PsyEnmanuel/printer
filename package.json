@@ -1,13 +1,13 @@
 {
   "name": "saonas-printer",
-  "version": "1.0.4",
+  "version": "1.0.1",
   "description": "Saonas-printer",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "nodemon --exec electron .",
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
   },
   "repository": {
     "type": "git",
