@@ -18,7 +18,8 @@
     "releaseType": "release",
     "private": true,
     "owner": "PsyEnmanuel",
-    "repo": "saonas"
+    "repo": "saonas",
+    "publish": "always"
   },
   "build": {
     "appId": "com.saonas.app",
