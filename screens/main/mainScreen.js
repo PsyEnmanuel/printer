@@ -1,3 +1,4 @@
+const electronReload = require('electron-reload')
 const { app, BrowserWindow, ipcMain, globalShortcut } = require("electron");
 const path = require("path");
 
@@ -7,9 +8,8 @@ class MainScreen {
   position = {
     width: 1000,
     height: 600,
-    maximized: false,
+    maximized: true,
   };
-
   constructor() {
     this.window = new BrowserWindow({
       width: this.position.width,
@@ -20,7 +20,6 @@ class MainScreen {
       acceptFirstMouse: true,
       autoHideMenuBar: true,
       webPreferences: {
-        contextIsolation: true,
         preload: path.join(__dirname, "./mainPreload.js"),
       },
     });
@@ -42,9 +41,7 @@ class MainScreen {
   }
 
   showMessage(message) {
-    console.log("showMessage trapped");
-    console.log(message);
-    this.window.webContents.send("updateMessage", message);
+    // this.window.webContents.send("updateMessage", message);
   }
 
   close() {

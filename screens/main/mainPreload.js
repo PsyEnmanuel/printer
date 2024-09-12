@@ -1,7 +1,16 @@
 const { contextBridge, ipcRenderer } = require("electron");
 
-let bridge = {
-    updateMessage: (callback) => ipcRenderer.on("updateMessage", callback),
-  };
-  
-  contextBridge.exposeInMainWorld("bridge", bridge);
+contextBridge.exposeInMainWorld("bridge", {
+  sendMessage: (channel, data) => {
+    const validChannels = ["toMain"];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.send(channel, data);
+    }
+  },
+  receiveMessage: (channel, func) => {
+    const validChannels = ["fromMain"];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.on(channel, (event, ...args) => func(...args));
+    }
+  },
+});
