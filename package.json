@@ -1,6 +1,6 @@
 {
   "name": "saonas-printer",
-  "version": "1.0.3",
+  "version": "1.0.2",
   "description": "Saonas-printer",
   "main": "main.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "watch": "nodemon --exec electron .",
     "start": "electron .",
     "dist": "electron-builder",
-    "deploy": "git add . && git commit -m $npm_package_version && npm version patch && git push"
+    "deploy": "git add . && git commit -m $npm_package_version && npm version patch && git push origin master"
   },
   "repository": {
     "type": "git",

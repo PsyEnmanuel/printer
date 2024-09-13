@@ -12,7 +12,12 @@ jobs:
 
     steps:
 
-      # Step 1: Create draft GitHub release
+      # Step 1: Read version from package.json
+      - name: Get version from package.json
+        id: version
+        run: echo "::set-output name=VERSION::$(node -p \"require('./package.json').version\")"
+
+      # Step 2: Create draft GitHub release
       - name: Create Draft Release
         id: create_release
         uses: actions/create-release@v1
@@ -24,21 +29,21 @@ jobs:
           draft: true  # This ensures the release is created as a draft
           prerelease: false  # Set to true if it's a pre-release
 
-      # Step 2: Checkout the repository
+      # Step 3: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 3: Set up Node.js (required for Electron)
+      # Step 4: Set up Node.js (required for Electron)
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '16.x'  # Specify the Node.js version
 
-      # Step 4: Install dependencies
+      # Step 5: Install dependencies
       - name: Install dependencies
         run: npm install
 
-      # Step 5: Build and publish the Electron app
+      # Step 6: Build and publish the Electron app
       - name: Build and publish
         run: npm run dist  # Or the custom build command you use
         env:
