@@ -11,40 +11,48 @@ jobs:
     runs-on: windows-latest  # Use Windows environment
 
     steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-      # Step 1: Read version from package.json
+      # Step 2: Set up Node.js (required for Electron)
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.x'  # Specify the Node.js version
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Read version from package.json
       - name: Get version from package.json
         id: version
         run: echo "::set-output name=VERSION::$(node -p \"require('./package.json').version\")"
 
-      # Step 2: Create draft GitHub release
+      # Step 5: Build the Electron app
+      - name: Build Electron app
+        run: npm run dist  # Or the custom build command you use
+
+      # Step 6: Create draft GitHub release using version from package.json
       - name: Create Draft Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # GitHub token for authentication
         with:
-          tag_name: '{{ steps.version.outputs.VERSION }}'  # Replace with your version tag
-          release_name: '{{ steps.version.outputs.VERSION }}'  # Replace with your release name
+          tag_name: "v${{ steps.version.outputs.VERSION }}"  # Version from package.json
+          release_name: "v${{ steps.version.outputs.VERSION }}"  # Use the same version for the release name
           draft: true  # This ensures the release is created as a draft
           prerelease: false  # Set to true if it's a pre-release
 
-      # Step 3: Checkout the repository
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      # Step 4: Set up Node.js (required for Electron)
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16.x'  # Specify the Node.js version
-
-      # Step 5: Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Step 6: Build and publish the Electron app
-      - name: Build and publish
-        run: npm run dist  # Or the custom build command you use
+      # Step 7: Upload the Electron build artifact to the release (optional)
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Use the GH_TOKEN secret for authentication
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # GitHub token for authentication
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}  # URL from the release step
+          asset_path: path/to/your/build/file  # Path to the built Electron app (.exe, .dmg, etc.)
+          asset_name: your-electron-app.exe  # Name of the file as it should appear in the release
+          asset_content_type: application/octet-stream
