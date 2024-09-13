@@ -1,13 +1,15 @@
 {
   "name": "saonas-printer",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Saonas-printer",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch": "nodemon --exec electron .",
     "start": "electron .",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "patch": "npm version patch",
+    "deploy": "git add . && git commit -m $npm_package_version && git push"
   },
   "repository": {
     "type": "git",
@@ -39,6 +41,7 @@
     "nodemon": "^2.0.19"
   },
   "dependencies": {
+    "auto-launch": "^5.0.6",
     "axios": "^1.7.7",
     "electron-reload": "^2.0.0-alpha.1",
     "electron-updater": "^5.3.0",

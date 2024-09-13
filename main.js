@@ -3,11 +3,28 @@ const MainScreen = require("./screens/main/mainScreen");
 const Globals = require("./globals");
 const { autoUpdater, AppUpdater } = require("electron-updater");
 const io = require("socket.io-client");
-const { print } = require("pdf-to-printer");
+const printer = require('pdf-to-printer');
+const AutoLaunch = require('auto-launch');
 const axios = require("axios");
+const path = require("path");
+const fs = require("fs");
 
 let curWindow;
 let socket;
+
+let appLauncher = new AutoLaunch({
+  name: 'Saonas-printer',
+  path: process.execPath,
+});
+
+// Enable auto-launch
+appLauncher.isEnabled().then((isEnabled) => {
+  if (!isEnabled) {
+    appLauncher.enable();
+  }
+}).catch((err) => {
+  console.error('Error enabling auto-launch:', err);
+});
 
 //Basic flags
 autoUpdater.autoDownload = false;
@@ -51,88 +68,116 @@ ipcMain.on("toMain", (event, data) => {
     socket.emit("messageFromClient", "Hello from Electron main process!");
   });
 
-  socket.on("print-invoice", ({ data, options, user, url, token }) => {
-    print(url).then((res) => {
-      console.log(res);
-    }).catch(err => {
-      console.log('err', err);
+  function downloadPDF(url, outputPath) {
+    return axios({
+      url,
+      method: 'GET',
+      responseType: 'stream',
+    }).then((response) => {
+      return new Promise((resolve, reject) => {
+        const writer = fs.createWriteStream(outputPath);
+        response.data.pipe(writer);
+        writer.on('finish', resolve);
+        writer.on('error', reject);
+      });
     });
-    console.log(1);
-    return;
-    const dataURL = `data:application/pdf;base64,${data}`;
+  }
 
-    let printWindow = new BrowserWindow({
-      show: true,
-      width: 800,
-      height: 600,
-      webPreferences: {
-        plugins: true,
-        nodeIntegration: false,
-        contextIsolation: true,
-      },
-    });
+  // Function to print PDF
+  function downloadAndPrintPDF(url, options) {
+    const pdfPath = path.join(app.getPath('temp'), 'downloaded-file.pdf');
 
-    // Load PDF content into the print window
-    console.log(url);
-    printWindow.maximize();
-    printWindow.loadURL(url);
-    printWindow.webContents.on("did-finish-load", () => {
-      printWindow.webContents.print(
-        {
+    downloadPDF(url, pdfPath)
+      .then(() => {
+        // Print the downloaded PDF
+        return printer.print(pdfPath, {
+          silent: true,
+          paperSize: 'statement',
           ...options,
-        },
-        async (success, errorType) => {
-          console.log(1, success);
-          console.log(2, errorType);
-          const msg = {
-            action: "printed",
-            status: 1,
-            text: `Documento impreso en ${options.deviceName}`,
-            user,
-          };
+        });
+      })
+      .then(() => {
+        console.log('PDF printed successfully');
+      })
+      .catch((err) => {
+        axios({
+          method: "post",
+          url: "https://api.postmarkapp.com/email",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Postmark-Server-Token": process.env.POSTMARK_API,
+          },
+          data: {
+            MessageStream: "outbound",
+            From: `Clinica Piel Dra. Vásquez <contact@saonas.com>`,
+            To: "enmanuelpsy@gmail.com",
+            Subject: `Error al imprimir Electron`,
+            TextBody: `Print failed: ${errorType}`,
+          },
+        });
+        msg.status = 0;
+        msg.text = `Documento no pudo ser impreso en ${options.deviceName}`;
+        console.error('Failed to print PDF:', err);
+      });
+  }
 
-          if (!success) {
-            await axios({
-              method: "post",
-              url: "https://api.postmarkapp.com/email",
-              headers: {
-                Accept: "application/json",
-                "Content-Type": "application/json",
-                "X-Postmark-Server-Token": process.env.POSTMARK_API,
-              },
-              data: {
-                MessageStream: "outbound",
-                From: `Clinica Piel Dra. Vásquez <contact@saonas.com>`,
-                To: "enmanuelpsy@gmail.com",
-                Subject: `Error al imprimir Electron`,
-                TextBody: `Print failed: ${errorType}`,
-              },
-            });
-            msg.status = 0;
-            msg.text = `Documento no pudo ser impreso en ${options.deviceName}`;
-            console.log("Print failed: ", errorType);
-          }
-          console.log(msg);
-          axios({
-            method: "POST",
-            url: `${process.env.API}/comunication/notification`,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              authorization: token,
-            },
-            data: msg,
-          });
-          printWindow.close();
-        }
-      );
-    });
-    printWindow.webContents.on(
-      "did-fail-load",
-      (event, errorCode, errorDescription) => {
-        console.error("Failed to load content: ", errorDescription);
-      }
-    );
+  socket.on("print-invoice", ({ account, api, options, user, url, token }) => {
+
+    const msg = {
+      action: "printed",
+      status: 1,
+      text: `Documento impreso en ${options.printer}`,
+      user,
+    };
+
+    const pdfPath = path.join(app.getPath('temp'), 'downloaded-file.pdf');
+
+    downloadPDF(url, pdfPath)
+      .then(() => {
+        // Print the downloaded PDF
+        return printer.print(pdfPath, {
+          silent: true,
+          paperSize: 'statement',
+          ...options,
+        });
+      })
+      .then(() => {
+        console.log(msg)
+        axios({
+          method: "POST",
+          url: `${api}/api/comunication/notification`,
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            authorization: token,
+          },
+          data: msg,
+        });
+        printWindow.close();
+      })
+      .catch((err) => {
+        axios({
+          method: "post",
+          url: "https://api.postmarkapp.com/email",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            "X-Postmark-Server-Token": process.env.POSTMARK_API,
+          },
+          data: {
+            MessageStream: "outbound",
+            From: `${account.description} <contact@saonas.com>`,
+            To: "enmanuelpsy@gmail.com",
+            Subject: `Error al imprimir Electron`,
+            TextBody: `Print failed: ${errorType}`,
+          },
+        });
+        msg.status = 0;
+        msg.text = `Documento no pudo ser impreso en ${options.printer}`;
+        console.error('Failed to print PDF:', err);
+        printWindow.close();
+      });
   });
 
   // Handle connection errors
