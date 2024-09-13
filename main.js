@@ -140,7 +140,7 @@ ipcMain.on("toMain", (event, data) => {
   }
 
   socket.on("print-invoice", ({ account, api, options, user, url, token }) => {
-
+    
     const msg = {
       action: "printed",
       status: 1,
@@ -154,7 +154,6 @@ ipcMain.on("toMain", (event, data) => {
       .then(() => {
         return printer.print(pdfPath, {
           silent: true,
-          paperSize: 'statement',
           ...options,
         });
       })
