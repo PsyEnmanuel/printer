@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, ipcRenderer } = require("electron");
+const { app, BrowserWindow, ipcMain, ipcRenderer, Tray, Menu } = require("electron");
 const MainScreen = require("./screens/main/mainScreen");
 const Globals = require("./globals");
 const { autoUpdater, AppUpdater } = require("electron-updater");
@@ -11,15 +11,16 @@ const fs = require("fs");
 
 let curWindow;
 let socket;
+let tray = null;
 
 let appLauncher = new AutoLaunch({
   name: 'saonas-printer',
   path: process.execPath,
+  args: ['--auto-launch'],
 });
 
 // Enable auto-launch
 appLauncher.isEnabled().then((isEnabled) => {
-  console.log(11)
   if (!isEnabled) {
     appLauncher.enable();
   }
@@ -33,22 +34,74 @@ autoUpdater.autoInstallOnAppQuit = true;
 
 function createWindow() {
   curWindow = new MainScreen();
-}
-
-app.whenReady().then(() => {
-  createWindow();
 
   app.on("activate", function () {
     if (BrowserWindow.getAllWindows().length == 0) createWindow();
   });
 
   autoUpdater.checkForUpdates();
+
+  curWindow.window.on('close', (event) => {
+    event.preventDefault();  // Prevent the window from being closed
+    curWindow.window.hide();       // Hide the window instead
+  });
+
+  curWindow.window.on('closed', () => {
+    curWindow.window = null;
+  });
+
   curWindow.window.webContents.on("did-finish-load", () => {
     curWindow.window.webContents.send(
       "fromMain",
       `Checking for updates. Current version ${app.getVersion()}`
     );
   });
+
+}
+
+app.whenReady().then(() => {
+
+  const isAutoLaunch = process.argv.includes('--auto-launch');
+
+  if (!isAutoLaunch) {
+
+    tray = new Tray(path.join(__dirname, 'public/icons/png', '32x32.png')); // Replace with your icon file path
+
+    const contextMenu = Menu.buildFromTemplate([
+      {
+        label: 'Open', click: () => {
+          console.log(11, curWindow)
+          if (!curWindow) {
+            createWindow();
+          } else {
+            curWindow.window.show();
+          }
+        }
+      },
+      {
+        label: 'Quit', click: () => {
+          if (tray) {
+            tray.destroy();  // Remove the tray icon
+          }
+          app.quit();
+        }
+      },
+    ]);
+
+    tray.setToolTip('saonas Printer');
+    tray.setContextMenu(contextMenu);
+
+    tray.on('click', () => {
+      if (!curWindow) {
+        createWindow();
+      } else {
+        curWindow.window.show();
+      }
+    });
+
+  } else {
+    console.log("App launched in background (auto-launch mode).");
+  }
 });
 
 ipcMain.on("toMain", (event, data) => {
