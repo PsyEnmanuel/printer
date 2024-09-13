@@ -1,13 +1,12 @@
-name: Build and Publish Electron App
+name: Create Release from package.json
 
 on:
   push:
     branches:
-      - master  # or your default branch
-  pull_request:
+      - master  # Trigger on push to the master branch
 
 jobs:
-  build:
+  create_release:
     runs-on: windows-latest  # Use Windows environment
 
     steps:
@@ -15,28 +14,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Set up Node.js (required for Electron)
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '16.x'  # Specify the Node.js version
-
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Step 4: Read version from package.json using jq
+      # Step 2: Read version from package.json using Node.js
       - name: Get version from package.json
         id: version
         run: |
-          VERSION=$(jq -r '.version' package.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          node -p "require('./package.json').version" > version.txt
+          echo "VERSION=$(type version.txt)" >> $env:GITHUB_ENV
+        shell: powershell
 
-      # Step 5: Build the Electron app
-      - name: Build Electron app
-        run: npm run dist  # Or the custom build command you use
-
-      # Step 6: Create draft GitHub release using version from package.json
+      # Step 3: Create draft GitHub release using version from package.json
       - name: Create Draft Release
         id: create_release
         uses: actions/create-release@v1
@@ -47,9 +33,3 @@ jobs:
           release_name: "v${{ env.VERSION }}"  # Use the same version for the release name
           draft: true  # This ensures the release is created as a draft
           prerelease: false  # Set to true if it's a pre-release
-
-      # Step 6: Build and publish the Electron app
-      - name: Build and publish
-        run: npm run dist  # Or the custom build command you use
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}  # Use the GH_TOKEN secret for authentication
