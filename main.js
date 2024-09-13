@@ -135,7 +135,6 @@ ipcMain.on("toMain", (event, data) => {
 
     downloadPDF(url, pdfPath)
       .then(() => {
-        // Print the downloaded PDF
         return printer.print(pdfPath, {
           silent: true,
           paperSize: 'statement',
