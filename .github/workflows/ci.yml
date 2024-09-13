@@ -30,8 +30,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}  # GitHub token for authentication
         with:
-          tag_name: "v${{ env.VERSION }}"  # Version from package.json
-          release_name: "v${{ env.VERSION }}"  # Use the same version for the release name
+          tag_name: "${{ env.VERSION }}"  # Version from package.json
+          release_name: "${{ env.VERSION }}"  # Use the same version for the release name
           draft: true  # This ensures the release is created as a draft
           prerelease: false  # Set to true if it's a pre-release
 

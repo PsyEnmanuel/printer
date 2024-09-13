@@ -19,6 +19,7 @@ let appLauncher = new AutoLaunch({
 
 // Enable auto-launch
 appLauncher.isEnabled().then((isEnabled) => {
+  console.log(11)
   if (!isEnabled) {
     appLauncher.enable();
   }
