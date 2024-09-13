@@ -13,6 +13,7 @@ let curWindow;
 let socket;
 let tray = null;
 
+
 let appLauncher = new AutoLaunch({
   name: 'saonas-printer',
   path: process.execPath,
