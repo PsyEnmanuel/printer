@@ -13,7 +13,7 @@ let curWindow;
 let socket;
 
 let appLauncher = new AutoLaunch({
-  name: 'Saonas-printer',
+  name: 'saonas-printer',
   path: process.execPath,
 });
 
@@ -82,45 +82,6 @@ ipcMain.on("toMain", (event, data) => {
         writer.on('error', reject);
       });
     });
-  }
-
-  // Function to print PDF
-  function downloadAndPrintPDF(url, options) {
-    const pdfPath = path.join(app.getPath('temp'), 'downloaded-file.pdf');
-
-    downloadPDF(url, pdfPath)
-      .then(() => {
-        // Print the downloaded PDF
-        return printer.print(pdfPath, {
-          silent: true,
-          paperSize: 'statement',
-          ...options,
-        });
-      })
-      .then(() => {
-        console.log('PDF printed successfully');
-      })
-      .catch((err) => {
-        axios({
-          method: "post",
-          url: "https://api.postmarkapp.com/email",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Postmark-Server-Token": process.env.POSTMARK_API,
-          },
-          data: {
-            MessageStream: "outbound",
-            From: `Clinica Piel Dra. Vásquez <contact@saonas.com>`,
-            To: "enmanuelpsy@gmail.com",
-            Subject: `Error al imprimir Electron`,
-            TextBody: `Print failed: ${errorType}`,
-          },
-        });
-        msg.status = 0;
-        msg.text = `Documento no pudo ser impreso en ${options.deviceName}`;
-        console.error('Failed to print PDF:', err);
-      });
   }
 
   socket.on("print-invoice", ({ account, api, options, user, url, token }) => {

@@ -1,7 +1,7 @@
 {
   "name": "saonas-printer",
-  "version": "1.0.13",
-  "description": "Saonas-printer",
+  "version": "1.0.0",
+  "description": "saonas-printer",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -24,7 +24,7 @@
   },
   "build": {
     "appId": "com.saonas-printer.app",
-    "productName": "Saonas-printer",
+    "productName": "saonas-printer",
     "win": {
       "target": "nsis"
     },
@@ -32,7 +32,7 @@
       "output": "dist"
     }
   },
-  "author": "CoderJeet",
+  "author": "Enmanuel Martinez",
   "license": "ISC",
   "devDependencies": {
     "electron": "^19.0.9",
