@@ -51,9 +51,7 @@ function createWindow() {
   curWindow.window.on('closed', () => {
     curWindow.window = null;
   });
-  
-  curWindow.window.show();
-  
+
   curWindow.window.webContents.on("did-finish-load", () => {
     curWindow.window.webContents.send(
       "fromMain",
@@ -103,6 +101,8 @@ app.whenReady().then(() => {
       }
     });
 
+    createWindow();
+    
   } else {
     console.log("App launched in background (auto-launch mode).");
   }
