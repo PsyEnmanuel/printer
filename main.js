@@ -112,10 +112,11 @@ ipcMain.on("toMain", (event, data) => {
     socket.disconnect(true);
   }
 
-  socket =
-    process.env.NODE_ENV === "production"
-      ? io(data ? data : "https://clinicapieldravasquez.saonas.com/")
-      : io(data ? data : "http://localhost:5032");
+  socket = io("https://clinicapieldravasquez.saonas.com")
+  // socket =
+  //   process.env.NODE_ENV === "production"
+  //     ? io(data ? data : "https://clinicapieldravasquez.saonas.com")
+  //     : io(data ? data : "http://localhost:5032");
 
   socket.on("connect", () => {
     console.log("Connected to the server");

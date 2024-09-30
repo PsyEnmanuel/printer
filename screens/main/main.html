@@ -19,7 +19,7 @@
   <body>
     <div id="app">
       <div class="bg-sky-800 text-white text-center">{{ message }}</div>
-
+<!-- 
       <div class="p-4">
         <label class="block text-gray-700 text-sm font-bold mb-2">
           Agregar API
@@ -29,7 +29,7 @@
           type="text"
           placeholder="Agregar aquí la url"
           v-model="url" />
-      </div>
+      </div> -->
 
       <div class="p-4 w-full flex justify-center items-center">
         <div class="flex flex-col items-center">
@@ -45,7 +45,7 @@
           return {
             timeout: null,
             message: "Status message...",
-            url: "http://localhost:5032",
+            url: "https://clinicapieldravasquez.saonas.com",
           };
         },
         watch: {
@@ -64,13 +64,13 @@
           },
         },
         mounted() {
-          this.url = localStorage.getItem("url");
+          // this.url = localStorage.getItem("url");
 
           window.bridge.receiveMessage("fromMain", (val) => {
             this.message = val;
           });
 
-          window.bridge.sendMessage("toMain", this.url);
+          // window.bridge.sendMessage("toMain", this.url);
         },
       }).mount("#app");
     </script>
