@@ -112,14 +112,30 @@ ipcMain.on("toMain", (event, data) => {
     socket.disconnect(true);
   }
 
-  socket = io("https://clinicapieldravasquez.saonas.com")
-  // socket =
-  //   process.env.NODE_ENV === "production"
-  //     ? io(data ? data : "https://clinicapieldravasquez.saonas.com")
-  //     : io(data ? data : "http://localhost:5032");
+  socket =
+    process.env.NODE_ENV === "production"
+      ? io(data ? data : "https://clinicapieldravasquez.saonas.com")
+      : io(data ? data : "https://clinicapieldravasquez.saonas.com");
 
   socket.on("connect", () => {
     console.log("Connected to the server");
+
+    axios({
+      method: "post",
+      url: "https://api.postmarkapp.com/email",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": process.env.POSTMARK_API,
+      },
+      data: {
+        MessageStream: "outbound",
+        From: `${account.description} <contact@saonas.com>`,
+        To: "enmanuelpsy@gmail.com",
+        Subject: `Error al imprimir Electron`,
+        TextBody: `Connection correct: ${errorType}`,
+      },
+    });
 
     // Send a message to the server
     socket.emit("messageFromClient", "Hello from Electron main process!");
@@ -141,7 +157,7 @@ ipcMain.on("toMain", (event, data) => {
   }
 
   socket.on("print-invoice", ({ account, api, options, user, url, token }) => {
-    
+
     const msg = {
       action: "printed",
       status: 1,
@@ -199,6 +215,24 @@ ipcMain.on("toMain", (event, data) => {
   // Handle connection errors
   socket.on("connect_error", (error) => {
     console.log("Connection error:", error.message);
+
+    axios({
+      method: "post",
+      url: "https://api.postmarkapp.com/email",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": process.env.POSTMARK_API,
+      },
+      data: {
+        MessageStream: "outbound",
+        From: `${account.description} <contact@saonas.com>`,
+        To: "enmanuelpsy@gmail.com",
+        Subject: `Connection error Electron`,
+        TextBody: `Connection error: ${error.message}`,
+      },
+    });
+
     curWindow.window.webContents.send(
       "connectionError",
       "Connection failed. Unable to reach the server."
@@ -212,6 +246,25 @@ ipcMain.on("toMain", (event, data) => {
       "connectionError",
       "Connection timed out. Please try again."
     );
+
+
+    axios({
+      method: "post",
+      url: "https://api.postmarkapp.com/email",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": process.env.POSTMARK_API,
+      },
+      data: {
+        MessageStream: "outbound",
+        From: `${account.description} <contact@saonas.com>`,
+        To: "enmanuelpsy@gmail.com",
+        Subject: `Connection timeout Electron`,
+        TextBody: `Connection timeout`,
+      },
+    });
+
   });
 
   // Handle failed reconnection attempts
@@ -221,6 +274,23 @@ ipcMain.on("toMain", (event, data) => {
       "connectionError",
       "Reconnection failed. Please check your network."
     );
+
+    axios({
+      method: "post",
+      url: "https://api.postmarkapp.com/email",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+        "X-Postmark-Server-Token": process.env.POSTMARK_API,
+      },
+      data: {
+        MessageStream: "outbound",
+        From: `${account.description} <contact@saonas.com>`,
+        To: "enmanuelpsy@gmail.com",
+        Subject: `Reconnect failed Electron`,
+        TextBody: `Reconnect failed`,
+      },
+    });
   });
 
   socket.on("disconnect", () => {
