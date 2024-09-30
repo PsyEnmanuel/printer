@@ -90,6 +90,7 @@ app.whenReady().then(() => {
       },
     ]);
 
+    
     tray.setToolTip('saonas Printer');
     tray.setContextMenu(contextMenu);
 
@@ -102,7 +103,7 @@ app.whenReady().then(() => {
     });
 
     createWindow();
-    
+
   } else {
     console.log("App launched in background (auto-launch mode).");
   }
