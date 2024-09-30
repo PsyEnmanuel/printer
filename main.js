@@ -18,7 +18,7 @@ let appLauncher = new AutoLaunch({
   name: 'saonas-printer',
   path: process.execPath,
   args: ['--auto-launch'],
-  isHidden: true
+  isHidden: false
 });
 
 // Enable auto-launch
