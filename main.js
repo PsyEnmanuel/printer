@@ -57,6 +57,7 @@ function createWindow() {
       "fromMain",
       `Checking for updates. Current version ${app.getVersion()}`
     );
+    curWindow.window.show();
   });
 
 }
