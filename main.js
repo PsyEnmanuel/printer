@@ -51,13 +51,14 @@ function createWindow() {
   curWindow.window.on('closed', () => {
     curWindow.window = null;
   });
-
+  
+  curWindow.window.show();
+  
   curWindow.window.webContents.on("did-finish-load", () => {
     curWindow.window.webContents.send(
       "fromMain",
       `Checking for updates. Current version ${app.getVersion()}`
     );
-    curWindow.window.show();
   });
 
 }
