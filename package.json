@@ -1,6 +1,6 @@
 {
   "name": "saonas-printer",
-  "version": "1.0.13",
+  "version": "1.0.14",
   "description": "saonas-printer",
   "main": "main.js",
   "scripts": {
