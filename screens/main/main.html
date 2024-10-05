@@ -20,17 +20,6 @@
     <div id="app">
       <div class="bg-sky-800 text-white text-center">{{ message }}</div>
 
-      <div class="p-4">
-        <label class="block text-gray-700 text-sm font-bold mb-2">
-          Agregar API
-        </label>
-        <input
-          class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500"
-          type="text"
-          placeholder="Agregar aquí la url"
-          v-model="url" />
-      </div>
-
       <div class="p-4 w-full flex justify-center items-center">
         <div class="flex flex-col items-center">
           <img src="../../public/logo.png" alt="" />
@@ -48,29 +37,15 @@
             url: "https://clinicapieldravasquez.saonas.com",
           };
         },
-        watch: {
-          url(val) {
-            localStorage.setItem("url", val);
-            clearTimeout(this.timeout);
-            this.timeout = setTimeout(() => {
-              window.bridge.sendMessage("toMain", val);
-            }, 2000);
-          },
-        },
         methods: {
           updateMessage(event, message) {
-            console.log("message logged in view");
             state.message = message;
           },
         },
         mounted() {
-          this.url = localStorage.getItem("url");
-
           window.bridge.receiveMessage("fromMain", (val) => {
             this.message = val;
           });
-
-          window.bridge.sendMessage("toMain", this.url);
         },
       }).mount("#app");
     </script>

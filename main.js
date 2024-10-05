@@ -90,7 +90,7 @@ app.whenReady().then(() => {
       },
     ]);
 
-    
+
     tray.setToolTip('saonas Printer');
     tray.setContextMenu(contextMenu);
 
@@ -109,196 +109,187 @@ app.whenReady().then(() => {
   }
 });
 
-ipcMain.on("toMain", (event, data) => {
-  console.log(`Received message from renderer: ${data}`);
-  if (socket) {
-    socket.disconnect(true);
-  }
+socket = "https://clinicapieldravasquez.saonas.com"
 
-  socket =
-    process.env.NODE_ENV === "production"
-      ? io(data ? data : "https://clinicapieldravasquez.saonas.com")
-      : io(data ? data : "https://clinicapieldravasquez.saonas.com");
+socket.on("connect", () => {
+  console.log("Connected to the server");
 
-  socket.on("connect", () => {
-    console.log("Connected to the server");
-
-    axios({
-      method: "post",
-      url: "https://api.postmarkapp.com/email",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": process.env.POSTMARK_API,
-      },
-      data: {
-        MessageStream: "outbound",
-        From: `${account.description} <contact@saonas.com>`,
-        To: "enmanuelpsy@gmail.com",
-        Subject: `Error al imprimir Electron`,
-        TextBody: `Connection correct: ${errorType}`,
-      },
-    });
-
-    // Send a message to the server
-    socket.emit("messageFromClient", "Hello from Electron main process!");
+  axios({
+    method: "post",
+    url: "https://api.postmarkapp.com/email",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Postmark-Server-Token": process.env.POSTMARK_API,
+    },
+    data: {
+      MessageStream: "outbound",
+      From: `${account.description} <contact@saonas.com>`,
+      To: "enmanuelpsy@gmail.com",
+      Subject: `Error al imprimir Electron`,
+      TextBody: `Connection correct: ${errorType}`,
+    },
   });
 
-  function downloadPDF(url, outputPath) {
-    return axios({
-      url,
-      method: 'GET',
-      responseType: 'stream',
-    }).then((response) => {
-      return new Promise((resolve, reject) => {
-        const writer = fs.createWriteStream(outputPath);
-        response.data.pipe(writer);
-        writer.on('finish', resolve);
-        writer.on('error', reject);
+  // Send a message to the server
+  socket.emit("messageFromClient", "Hello from Electron main process!");
+});
+
+
+function downloadPDF(url, outputPath) {
+  return axios({
+    url,
+    method: 'GET',
+    responseType: 'stream',
+  }).then((response) => {
+    return new Promise((resolve, reject) => {
+      const writer = fs.createWriteStream(outputPath);
+      response.data.pipe(writer);
+      writer.on('finish', resolve);
+      writer.on('error', reject);
+    });
+  });
+}
+
+socket.on("print-invoice", ({ account, api, options, user, url, token }) => {
+
+  const msg = {
+    action: "printed",
+    status: 1,
+    text: `Documento impreso en ${options.printer}`,
+    user,
+  };
+
+  const pdfPath = path.join(app.getPath('temp'), 'downloaded-file.pdf');
+
+  downloadPDF(url, pdfPath)
+    .then(() => {
+      return printer.print(pdfPath, {
+        silent: true,
+        ...options,
       });
-    });
-  }
-
-  socket.on("print-invoice", ({ account, api, options, user, url, token }) => {
-
-    const msg = {
-      action: "printed",
-      status: 1,
-      text: `Documento impreso en ${options.printer}`,
-      user,
-    };
-
-    const pdfPath = path.join(app.getPath('temp'), 'downloaded-file.pdf');
-
-    downloadPDF(url, pdfPath)
-      .then(() => {
-        return printer.print(pdfPath, {
-          silent: true,
-          ...options,
-        });
-      })
-      .then(() => {
-        console.log(msg)
-        axios({
-          method: "POST",
-          url: `${api}/api/comunication/notification`,
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            authorization: token,
-          },
-          data: msg,
-        });
-        printWindow.close();
-      })
-      .catch((err) => {
-        axios({
-          method: "post",
-          url: "https://api.postmarkapp.com/email",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            "X-Postmark-Server-Token": process.env.POSTMARK_API,
-          },
-          data: {
-            MessageStream: "outbound",
-            From: `${account.description} <contact@saonas.com>`,
-            To: "enmanuelpsy@gmail.com",
-            Subject: `Error al imprimir Electron`,
-            TextBody: `Print failed: ${errorType}`,
-          },
-        });
-        msg.status = 0;
-        msg.text = `Documento no pudo ser impreso en ${options.printer}`;
-        console.error('Failed to print PDF:', err);
-        printWindow.close();
+    })
+    .then(() => {
+      console.log(msg)
+      axios({
+        method: "POST",
+        url: `${api}/api/comunication/notification`,
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          authorization: token,
+        },
+        data: msg,
       });
-  });
-
-  // Handle connection errors
-  socket.on("connect_error", (error) => {
-    console.log("Connection error:", error.message);
-
-    axios({
-      method: "post",
-      url: "https://api.postmarkapp.com/email",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": process.env.POSTMARK_API,
-      },
-      data: {
-        MessageStream: "outbound",
-        From: `${account.description} <contact@saonas.com>`,
-        To: "enmanuelpsy@gmail.com",
-        Subject: `Connection error Electron`,
-        TextBody: `Connection error: ${error.message}`,
-      },
+      printWindow.close();
+    })
+    .catch((err) => {
+      axios({
+        method: "post",
+        url: "https://api.postmarkapp.com/email",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "X-Postmark-Server-Token": process.env.POSTMARK_API,
+        },
+        data: {
+          MessageStream: "outbound",
+          From: `${account.description} <contact@saonas.com>`,
+          To: "enmanuelpsy@gmail.com",
+          Subject: `Error al imprimir Electron`,
+          TextBody: `Print failed: ${errorType}`,
+        },
+      });
+      msg.status = 0;
+      msg.text = `Documento no pudo ser impreso en ${options.printer}`;
+      console.error('Failed to print PDF:', err);
+      printWindow.close();
     });
+});
 
-    curWindow.window.webContents.send(
-      "connectionError",
-      "Connection failed. Unable to reach the server."
-    );
+// Handle connection errors
+socket.on("connect_error", (error) => {
+  console.log("Connection error:", error.message);
+
+  axios({
+    method: "post",
+    url: "https://api.postmarkapp.com/email",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Postmark-Server-Token": process.env.POSTMARK_API,
+    },
+    data: {
+      MessageStream: "outbound",
+      From: `${account.description} <contact@saonas.com>`,
+      To: "enmanuelpsy@gmail.com",
+      Subject: `Connection error Electron`,
+      TextBody: `Connection error: ${error.message}`,
+    },
   });
 
-  // Handle connection timeout
-  socket.on("connect_timeout", () => {
-    console.log("Connection timed out");
-    curWindow.window.webContents.send(
-      "connectionError",
-      "Connection timed out. Please try again."
-    );
+  curWindow.window.webContents.send(
+    "connectionError",
+    "Connection failed. Unable to reach the server."
+  );
+});
+
+// Handle connection timeout
+socket.on("connect_timeout", () => {
+  console.log("Connection timed out");
+  curWindow.window.webContents.send(
+    "connectionError",
+    "Connection timed out. Please try again."
+  );
 
 
-    axios({
-      method: "post",
-      url: "https://api.postmarkapp.com/email",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": process.env.POSTMARK_API,
-      },
-      data: {
-        MessageStream: "outbound",
-        From: `${account.description} <contact@saonas.com>`,
-        To: "enmanuelpsy@gmail.com",
-        Subject: `Connection timeout Electron`,
-        TextBody: `Connection timeout`,
-      },
-    });
-
+  axios({
+    method: "post",
+    url: "https://api.postmarkapp.com/email",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Postmark-Server-Token": process.env.POSTMARK_API,
+    },
+    data: {
+      MessageStream: "outbound",
+      From: `${account.description} <contact@saonas.com>`,
+      To: "enmanuelpsy@gmail.com",
+      Subject: `Connection timeout Electron`,
+      TextBody: `Connection timeout`,
+    },
   });
 
-  // Handle failed reconnection attempts
-  socket.on("reconnect_failed", () => {
-    console.log("Reconnection failed after multiple attempts");
-    curWindow.window.webContents.send(
-      "connectionError",
-      "Reconnection failed. Please check your network."
-    );
+});
 
-    axios({
-      method: "post",
-      url: "https://api.postmarkapp.com/email",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-        "X-Postmark-Server-Token": process.env.POSTMARK_API,
-      },
-      data: {
-        MessageStream: "outbound",
-        From: `${account.description} <contact@saonas.com>`,
-        To: "enmanuelpsy@gmail.com",
-        Subject: `Reconnect failed Electron`,
-        TextBody: `Reconnect failed`,
-      },
-    });
-  });
+// Handle failed reconnection attempts
+socket.on("reconnect_failed", () => {
+  console.log("Reconnection failed after multiple attempts");
+  curWindow.window.webContents.send(
+    "connectionError",
+    "Reconnection failed. Please check your network."
+  );
 
-  socket.on("disconnect", () => {
-    console.log("Disconnected from server");
+  axios({
+    method: "post",
+    url: "https://api.postmarkapp.com/email",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      "X-Postmark-Server-Token": process.env.POSTMARK_API,
+    },
+    data: {
+      MessageStream: "outbound",
+      From: `${account.description} <contact@saonas.com>`,
+      To: "enmanuelpsy@gmail.com",
+      Subject: `Reconnect failed Electron`,
+      TextBody: `Reconnect failed`,
+    },
   });
+});
+
+socket.on("disconnect", () => {
+  console.log("Disconnected from server");
 });
 
 /*New Update Available*/
