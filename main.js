@@ -124,10 +124,10 @@ socket.on("connect", () => {
     },
     data: {
       MessageStream: "outbound",
-      From: `${account.description} <contact@saonas.com>`,
+      From: `Enmanuel <contact@saonas.com>`,
       To: "enmanuelpsy@gmail.com",
       Subject: `Error al imprimir Electron`,
-      TextBody: `Connection correct: ${errorType}`,
+      TextBody: `Connection correct:`,
     },
   });
 
@@ -151,7 +151,7 @@ function downloadPDF(url, outputPath) {
   });
 }
 
-socket.on("print-invoice", ({ account, api, options, user, url, token }) => {
+socket.on("print-invoice", ({ api, options, user, url, token }) => {
 
   const msg = {
     action: "printed",
@@ -194,10 +194,10 @@ socket.on("print-invoice", ({ account, api, options, user, url, token }) => {
         },
         data: {
           MessageStream: "outbound",
-          From: `${account.description} <contact@saonas.com>`,
+          From: `Enmanuel <contact@saonas.com>`,
           To: "enmanuelpsy@gmail.com",
           Subject: `Error al imprimir Electron`,
-          TextBody: `Print failed: ${errorType}`,
+          TextBody: `Print failed:`,
         },
       });
       msg.status = 0;
@@ -221,7 +221,7 @@ socket.on("connect_error", (error) => {
     },
     data: {
       MessageStream: "outbound",
-      From: `${account.description} <contact@saonas.com>`,
+      From: `Enmanuel <contact@saonas.com>`,
       To: "enmanuelpsy@gmail.com",
       Subject: `Connection error Electron`,
       TextBody: `Connection error: ${error.message}`,
@@ -253,7 +253,7 @@ socket.on("connect_timeout", () => {
     },
     data: {
       MessageStream: "outbound",
-      From: `${account.description} <contact@saonas.com>`,
+      From: `Enmanuel <contact@saonas.com>`,
       To: "enmanuelpsy@gmail.com",
       Subject: `Connection timeout Electron`,
       TextBody: `Connection timeout`,
@@ -280,7 +280,7 @@ socket.on("reconnect_failed", () => {
     },
     data: {
       MessageStream: "outbound",
-      From: `${account.description} <contact@saonas.com>`,
+      From: `Enmanuel <contact@saonas.com>`,
       To: "enmanuelpsy@gmail.com",
       Subject: `Reconnect failed Electron`,
       TextBody: `Reconnect failed`,
