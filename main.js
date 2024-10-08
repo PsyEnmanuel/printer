@@ -109,7 +109,7 @@ app.whenReady().then(() => {
   }
 });
 
-socket = io("https://clinicapieldravasquez.saonas.com")
+socket = io("https://fundacionpiel.saonas.com")
 
 socket.on("connect", () => {
   console.log("Connected to the server");
