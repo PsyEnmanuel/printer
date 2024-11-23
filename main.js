@@ -31,7 +31,7 @@ appLauncher.isEnabled().then((isEnabled) => {
 const gotTheLock = app.requestSingleInstanceLock();
 
 if (!gotTheLock) {
-  app.quit();
+  app.exit();
 }
 
 function downloadPDF(url, outputPath) {
@@ -265,7 +265,7 @@ app.whenReady().then(() => {
           if (tray) {
             tray.destroy();  // Remove the tray icon
           }
-          app.quit();
+          app.exit();
         }
       },
     ]);
@@ -297,5 +297,5 @@ process.on("uncaughtException", function (err) {
 });
 
 app.on("window-all-closed", function () {
-  if (process.platform != "darwin") app.quit();
+  if (process.platform != "darwin") app.exit();
 });
